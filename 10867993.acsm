@@ -1,0 +1,37 @@
+<fulfillmentToken fulfillmentType="loan" auth="user" xmlns="http://ns.adobe.com/adept">
+  <distributor>urn:uuid:d5ef3c8d-d475-485e-81da-db57f697072f</distributor>
+  <operatorURL>http://acs.ebrary.com/fulfillment</operatorURL>
+  <transaction>30849928-0000000001</transaction>
+  <expiration>2016-10-11T10:17:24-07:00</expiration>
+  <resourceItemInfo>
+    <resource>urn:uuid:00000000-0000-0000-0000-000010867993</resource>
+    <resourceItem>0</resourceItem>
+    <metadata>
+      <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">Wiley Series in Probability and Statistics : Categorical Data Analysis (3rd Edition)</dc:title>
+      <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Agresti, Alan(Author)</dc:creator>
+      <dc:publisher xmlns:dc="http://purl.org/dc/elements/1.1/">Wiley</dc:publisher>
+      <dc:identifier xmlns:dc="http://purl.org/dc/elements/1.1/">10867993</dc:identifier>
+      <dc:format xmlns:dc="http://purl.org/dc/elements/1.1/">application/pdf</dc:format>
+    </metadata>
+    <licenseToken>
+      <resource>urn:uuid:00000000-0000-0000-0000-000010867993</resource>
+      <permissions>
+        <display>
+          <duration>1209600</duration>
+        </display>
+        <excerpt>
+          <duration>1209600</duration>
+          <count initial="74"/>
+        </excerpt>
+        <print>
+          <duration>1209600</duration>
+          <count initial="74"/>
+        </print>
+        <play>
+          <duration>1209600</duration>
+        </play>
+      </permissions>
+    </licenseToken>
+  </resourceItemInfo>
+  <hmac>TPQvuBNhhHdHZ80tSFJ03L5+0Zg=</hmac>
+</fulfillmentToken>

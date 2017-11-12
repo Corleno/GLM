@@ -1,0 +1,209 @@
+\documentclass[]{article}
+
+% Use utf-8 encoding for foreign characters
+%\usepackage[latin1]{inputenc}
+
+
+% Setup for fullpage use
+\usepackage{fullpage}
+% Uncomment some of the following if you use the features
+%
+% Running Headers and footers
+%\usepackage{fancyhdr}
+
+% Multipart figures Â´Â¡009753Âº
+% More symbols
+%\usepackage{amsmath}\emph{}
+%\usepackage{amssymb}
+%\usepackage{latexsym}
+
+% Surround parts of graphics with box
+\usepackage{boxedminipage}
+
+% Package for including code in the document
+\usepackage{listings}
+
+% Package for subfigure
+\usepackage{graphicx}
+
+
+% If you want to generate a toc for each chapter (use with book)
+\usepackage{minitoc}
+
+% This is now the recommended way for checking for PDFLaTeX:
+\usepackage{ifpdf}
+%\newif\ifpdf
+%\ifx\pdfoutput\undefined
+%\pdffalse % we are not running PDFLaTeX
+%\else
+%\pdfoutput=1 % we are running PDFLaTeX
+%\pdftrue
+%\  XCM CNXKJBWQGFUHREPUYT485Â¨94-32Â¨1fi
+\usepackage[all,light]{draftcopy}
+%\draftcopyName{PROBABILIDAD II}{5}
+
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{bm}
+\usepackage{layout}
+\usepackage{fancyhdr}
+\usepackage{subcaption}
+\pagestyle{fancy}
+%\fancyhf{}
+\newlength\FHoffset
+\setlength\FHoffset{0.1cm}
+%\addtolength\headwidth{2\FHoffset}
+\fancyheadoffset{\FHoffset}
+%\ifpdf
+%\usepackage[pdftex]{graphicx}
+%\else
+%\usepackage{graphicx}
+%\fi
+\usepackage[top=2cm,bottom=2cm,left = 1cm, right = 1cm,headsep=1.5cm]{geometry}
+\usepackage{hyperref}
+\newcommand{\R}{\mbox{$I\!\!R$}}
+\usepackage{cleveref}
+
+\begin{document}
+
+\lhead{\textsf{UCSC - Fall 2016} \\{AMS 374}}
+\chead{\Large{General Linear Model}}
+\rhead{\textsf{Student:} \\{Rui Meng}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+
+\begin{center}
+\section*{\underline{Homework 5}}
+\end{center}
+
+\begin{enumerate}  \Large{
+		\item[Ex1] Consider the data set from homework 2, problem 3 on the incidence of faults in the manufacturing of rolls of fabric:
+		\begin{center}
+			http://www.stat.columbia.edu/~gelman/book/data/fabric.asc
+		\end{center}
+		where the first column contains the length of each roll, which is the covariate with values $x_i$, and the second column contains the number of faults, which is the response with values $y_i$ and means $\mu_i$.
+		\begin{itemize}
+			\item[(a)] Fit a Bayesian Poisson GLM to these data, using a logarithmic link, $\log(\mu_i) = \beta_1 + \beta_2x_i$. Obtain the posterior distributions for $\beta_1$ and $\beta_2$, as well as point and interval estimates for the response mean as function of the covariate (over a grid of covariate values). Obtain the distributions of the posterior predictive residuals, and use them for model checking.
+			\item[(b)] Develop a hierarchical extension of the Poisson GLM from part (a), using a gamma distribution for the response means across roll lengths. Specifically, for the second stage of the hierarchical model, assume that
+			$$\mu_i|\tau_i,\lambda\stackrel{ind.}{\sim}\frac{1}{\Gamma(\lambda)}(\frac{\lambda}{\gamma_i})^\lambda\mu_i^{\lambda-1}\exp(-\frac{\lambda}{\gamma_i}\mu_i)\quad\mu_i>0;\lambda>0,\gamma_i>0,$$
+			where $\log(\gamma_i) = \beta_1+\beta_2x_{i\cdot}$(Here, $\Gamma(u) = \int_{0}^{\infty}t^{u-1}\exp(-t)dt$ is the Gamma function.)\\
+			Derive the expression for $E(Y_i|\beta_1,\beta_2,\lambda)$ and $Var(Y_i|\beta_1,\beta_2,\lambda)$, and compare them with the corresponding expressions under the non-hierarchical model from part (a). Develop an MCMC method for posterior simulation providing details for all its steps. Derive the expression for the posterior predictive distribution of a new response $y_0$ corresponding to a specified covariate value $x_0$, which is not included in the observed $x_i$. Implement the MCMC algorithm to obtain the posterior distributions for $\beta_1$, $\beta_2$ and $\lambda$, as well as point and interval estimates for the response mean as a function of the covariate (over a grid of covariate values). Discuss model checking results based on posterior predictive residuals.\\
+			Regarding the priors, you can use again the flat prior for $(\beta_1, \beta_2)$, but perform prior sensitivity analysis for $\lambda$ considering different proper priors, including $p(\lambda)=(\lambda+1)^{-2}$.
+			\item[(c)] Based on your results from parts (a) and (b), provide discussion on empirical comparison between the two models. Moreover, use the \textit{quadratic loss L measure} for formal comparison of the two models, in particular, to check if the hierarchical Poisson GLM offers an improvement to the fit of the non-hierarchical GLM. (Provide details on the required expressions fro computing the value of the model comparison criterion.)
+		\end{itemize}
+		\item[Sol 1]
+		\begin{itemize}
+			\item[(a)] Given the flat prior of $\bm \beta$, the posterior distribution of $\bm\beta$ are 
+			\begin{eqnarray}
+			Pr(\bm\beta|\bm x,\bm y) & \propto & \pi(\bm\beta)L(\bm{\beta; \bm x, \bm y})\\
+			& = & \prod_{i = 1}^{n}\frac{\lambda_i^{y_i}\exp(-\lambda_i)}{y_i!}
+			\end{eqnarray}
+			where $\lambda_i = \mu_i = \exp(\beta_1 + \beta_2x_{i\cdot})$.
+			Using the Metropolis Hasting algorithm, we obtain the posterior distributions of $\bm\beta$. After picking up reasonable number of samples and burn-in, the empirical posterior distributions are plotted in Figure~\ref{pos}.
+			\begin{figure}[ht!]
+				\centering
+				\includegraphics[scale = 0.4]{"pic/HW5_1/pos"}
+				\caption{Empirical posterior distributions of $\beta_1$ and $\beta_2$}
+				\label{pos}
+			\end{figure}
+			 Then the point and $95\%$ centered interval estimates are shown in Figure~\ref{RMC}
+			 \begin{figure}[ht!]
+			 	\centering
+			 	\includegraphics[scale = 0.4]{"pic/HW5_1/RMC"}
+			 	\caption{The response mean curve}
+			 	\label{RMC}
+			 \end{figure}
+			 Since this case has 32 posterior predictive residual distributions, it is difficult to show all distributions here. Therefore, for each covariate, we first sort observation $\bm y$ by the increasing order in $\bm x$, then generate boxplots of those posterior predictive distributions in Figure~\ref{box}
+			 \begin{figure}[ht!]
+			 	\centering
+			 	\includegraphics[scale = 0.4]{"pic/HW5_1/box"}
+			 	\caption{Boxplots for all posterior predictive residuals}
+			 	\label{box}
+			 \end{figure}
+			 It shows that many posterior predictive residual distributions deviate from zero. And as length increases, the deviation for the residuals is more significant. In other words, those residuals violate the zero mean assumption. Moreover, only 15 $y_i$ located in the $50\%$ center interval estimates of their corresponding posterior predictive distribution. So, the model checking shows this model is not ideal.
+			\item[(b)]
+			The expressions for $E(Y_i|\beta_1, \beta_2,\lambda)$ and $Var(Y_i|\beta_1, \beta_2, \lambda)$ are
+			\begin{eqnarray}
+			E(Y_i|\beta_1, \beta_2,\lambda) & = & E(E(Y_i|\mu_i))\\
+			& = & \gamma_i\\
+			& = & \exp(\beta_1 + \beta_2x_i)
+			\end{eqnarray}
+			and
+			\begin{eqnarray}
+			Var(Y_i|\beta_1, \beta_2,\lambda) & = & Var(E(Y_i|\mu_i)) + E(Var(Y_i|\mu_i))\\
+			& = &\frac{\gamma_i^2}{\lambda} + \gamma_i\\
+			& = & \frac{\exp^2(\beta_1 + \beta_2 x_i)}{\lambda} + \exp(\beta_1+\beta_2 x_i)
+			\end{eqnarray}
+			As for the non-hierarchical, the mean and variance are $E(Y_i|\beta_1,\beta_2) = \exp(\beta_1  + \beta_2x_i)$ and $Var(Y_i|\beta_1,\beta_2) = \exp(\beta_1  + \beta_2x_i)$.\\
+			In the hierarchical model, the parameters are $\bm \mu, \beta_1, \beta_2$ and $\lambda$. The posterior distribution of those parameters are 
+			\begin{eqnarray}
+			& & \Pr(\bm\mu, \beta_1, \beta_2,\lambda|\bm y, \bm x)\\ & \propto & \pi(\bm\mu,\beta_1, \beta_2, \lambda)\prod_{i = 1}^{n}Pois(y_i|\mu_i)Gamma(\mu_i|\lambda,\frac{\gamma_i}{\lambda})
+			\end{eqnarray}
+			where $\gamma_i = \exp(\beta_1+\beta_2x_i)$, $\lambda$ is the shape parameter and $\frac{\gamma_i}{\lambda}$ is the scale parameter.\\
+			Besides, the posterior predictive distribution of a new response $y_0$ is $Pr(y_0|\bm x,\bm y, x_0) = \int Pr(y_0|\beta_1, \beta_2, \lambda, x_0)Pr(\beta_1, \beta_2,\lambda|\bm x, \bm y) d(\beta_1, \beta_2, \lambda)$. And it can be estimated  by $\hat{Pr}(y_0|\bm x,\bm y, x_0) = \frac{1}{G}\sum_{g = 1}^{G}Pr(y_0|\beta_1^{(g)}, \beta_2^{(g)},\lambda^{(g)}, x_0)$, where $\beta_1^{(g)}, \beta_2^{(g)},\lambda^{(g)}$ are sampled from the posterior distribution. So $y_0^{(g)}$ can be sampled from $Pr(y_0|\beta_1^{(g)}, \beta_2^{(g)},\lambda^{(g)}, x_0)$ where $\beta_1^{(g)}, \beta_2^{(g)},\lambda^{(g)}$ are sampled from the posterior predictive distribution.\\
+			Assuming $\bm{\mu}$ have flat prior, then MCMC algorithm implement recursively update parameters as follows:\\
+			\begin{itemize}
+				\item[1] Given $\beta_1, \beta_2,\lambda$, sample the $\bm{\mu}$ from the posterior distribution by $\mu_i|\beta_1, \beta_2,\lambda, \bm y,\bm x \sim Gamma(\lambda+y_i,\frac{\gamma_i}{\lambda}+1)$.
+				\item[2] Sample  the $\lambda$ in $\log$ scale to guarantee that $\lambda > 0$ using M-H method.
+				\item[3] Then sample the $\beta_1$ and $\beta_2$ using M-H method.
+			\end{itemize} 
+			After selecting reasonable tuning parameters and burn-in, the posterior distributions of $\beta_1, \beta_2$ and $\lambda$ are shown in Figure~\ref{pos0}
+			\begin{figure}[ht!]
+				\centering
+				\includegraphics[scale = 0.4]{"pic/HW5_1/pos0"}
+				\caption{Empirical posterior distributions of $\beta_1, \beta_2$ and $\lambda$}
+				\label{pos0}
+			\end{figure}
+			Given the posterior samples of parameters, we show the point and $95\%$ centered interval estimates fro the response mean in Figure~\ref{RMC0}.
+			\begin{figure}[ht!]
+				\centering
+				\includegraphics[scale = 0.4]{"pic/HW5_1/RMC0"}
+				\caption{The response mean curve}
+				\label{RMC0}
+			\end{figure}
+			Based on the same procedures as in (a), we plot the boxplots for the posterior predictive residuals following the increasing order in $\bm x$. From Figure~\ref{box0}, compared with the non-hierarchical model, more posterior predictive residuals are close to $0$.\par
+			\begin{figure}[ht!]
+				\centering
+				\includegraphics[scale = 0.4]{"pic/HW5_1/box0"}
+				\caption{Boxplots for all posterior predictive residuals}
+				\label{box0}
+			\end{figure}
+			Replacing the flat prior for $\lambda$ by the prior $p(\lambda) = (\lambda+1)^{-2}$. The empirical posterior distributions of parameters are shown in Figure~\ref{pos1}.
+			\begin{figure}[ht!]
+				\centering
+				\includegraphics[scale = 0.4]{"pic/HW5_1/pos1"}
+				\includegraphics[scale = 0.4]{"pic/HW5_1/box1"}
+				\caption{Empirical posterior distributions of $\beta_1, \beta_2$ and $\lambda$ and boxplots for posterior predictive residuals}
+				\label{pos1}
+			\end{figure}
+			Comparing the posterior distributions between Figure~\ref{pos0} and Figure~\ref{pos1}, the difference with respect to the parameter $\lambda$ is a little significant. The posterior distribution of $\lambda$ with flat prior is relatively flatter than that with prior $p(\lambda) = (\lambda+1)^{-2}$, which means the prior sensitivity is not very significant and posterior distribution shows that $\lambda$ is around $7$. And comparing the empirical posterior predictive residuals Figure~\ref{box0} and ~\ref{pos1}, the difference is not  significant either. Perhaps, the model with prior $p(\lambda) = (\lambda+1)^{-2}$ is a little better than the model with flat prior.
+			\item[(c)] Looking through the boxplots of posterior predictive residuals, hierarchical model is better than non-hierarchical model, because the posterior predictive residuals in hierarchical model are more close to $0$.\\
+			Quantitatively, we use the quadratic loss L measure for the formal comparison of the two models. (considering all flat priors) \\
+			The loss function is
+			\begin{equation}
+			L_k(M_j) = \sum_{i = 1}^{n} Var^{M_j}(y_i^{rep}|data) + \frac{k}{k+1}\sum_{i = 1}^{n} (y_i^{rep} - E^{M_j}(y_i^{rep}|data))^2
+			\end{equation}
+			The quadratic loss L measures are summarized in the Table~\ref{loss}.\\
+			\begin{table}[ht!]
+				\centering
+				\caption{Quadratic loss L measures for both non-hierarchical and hierarchical models}
+				\begin{tabular}{|c|c|c|}
+					\hline
+					Model & Non-hierarchical model & Hierarchical model\\
+					\hline
+					$k/(k+1) \rightarrow 0$ & 897.72 & 689.80\\
+					\hline
+					$k/(k+1) \rightarrow 1$ & 55242.79 & 39616.07\\
+					\hline
+				\end{tabular}
+				\label{loss}
+			\end{table}
+			The Table~\ref{loss} shows that loss functions for hierarchical model is significantly smaller than those for non-hierarchical model, no matter how to select the regularity parameter $k$. So quantitatively the hierarchical model is better than the non-hierarchical model.
+		\end{itemize}
+		
+}
+\end{enumerate}
+
+\end{document}
